@@ -46,23 +46,6 @@ def get_seed(clustered_data, X_len, c_num, cluster_i, fashion='RoundRobin'):
         x = clustered_data[random_pick(pick_probability)]
         index = np.random.randint(0, len(x))
         return x[index], index
-# def similar_set(x, num_attribs, protected_attribs, constraint):
-#     # find all similar inputs corresponding to different combinations of protected attributes with non-protected attributes unchanged
-
-#     similar_x = np.empty(shape=(0, num_attribs))
-#     protected_domain = []
-#     for i in protected_attribs:
-#         protected_domain = protected_domain + [list(range(constraint[i][0], constraint[i][1]+1))]
-#     all_combs = np.array(list(itertools.product(*protected_domain)))
-#     print(all_combs.shape, all_combs)
-#     for comb in all_combs:
-#         x_new = x.copy()
-#         print(comb)
-#         for a, c in zip(protected_attribs, comb):
-#             x_new[a] = c
-#         similar_x = np.append(similar_x, [x_new], axis=0)
-#     return similar_x
-
 
 def similar_set(x, num_attribs, protected_attribs, constraint):
     similar_x = np.empty(shape=(0, num_attribs))

@@ -11,21 +11,22 @@ import numpy as np
 
 # Get the absolute path to the directory where figa.py is located
 base_path = os.path.dirname(os.path.abspath(__file__))
-# One levels up from figa.py
 sys.path.append(os.path.join(base_path, "../"))
 
-from figa_tutorial.ga_orignal import GA
+from fift_tutorial.ga_orignal import IHMGA
 from utils.helpers import get_experiment_params, generate_report, get_data
 from utils.model_wrapper import model_wrapper
-from figa_tutorial.compute_feature_importance import compute_feature_importance
-from figa_tutorial import generation_utilities
+from fift_tutorial.compute_feature_importance import compute_feature_importance
+from fift_tutorial import generation_utilities
 
 
-class FIGA:
-    def __init__(self, config, model, sensitive_param, classifier_name, population_size=200, crossover_rate=0.5, mutation_rate=0.1,
-                 fi_method='shap', fi_threshold_type='25_percentile', duplicate_penalty=True,):
+class FIFT:
+    def __init__(self, config, model, classifier_name, sensitive_param, population_size=200, crossover_rate=0.5, mutation_rate=0.1,
+                 fi_method='pfi', fi_threshold_type='25_percentile', mutation_type='ihm'):
         self.start_time = time.time()
         self.config = config
+        self.classifier_name = classifier_name
+        self.mutation_type = mutation_type
         self.population_size = population_size
 
         self.tot_inputs = set()
@@ -33,10 +34,9 @@ class FIGA:
 
         self.constraint = np.array(self.config.input_bounds)
         self.sensitive_param = sensitive_param
-        self.protected_attribs = np.array([1-sensitive_param])
+        self.protected_attribs = np.array([sensitive_param - 1])
         self.num_attribs = len(self.constraint)
         self.model = model_wrapper(model)
-        self.classifier_name = classifier_name.lower()
 
         self.time_to_1000_disc = -1
         self.total_generated = 0
@@ -46,10 +46,8 @@ class FIGA:
         self.log_interval = 300
         self.initial_log_interval = self.log_interval
 
-        self.duplicate_penalty = duplicate_penalty
 
-
-        self.setup = GA(
+        self.setup = IHMGA(
             pop_size=self.population_size,
             dna_size=len(self.config.input_bounds),
             bound=self.config.input_bounds,
@@ -58,11 +56,11 @@ class FIGA:
             fi_method=fi_method,
             fi_threshold_type=fi_threshold_type,
             crossover_rate=crossover_rate,
-            mutation_rate=mutation_rate
+            mutation_rate=mutation_rate,
+            mutation_type=self.mutation_type
         )
 
-        self.approach_name = f'FIGA_uniform_crossover'
-        # self.approach_name = f'FIGA_perm'
+        self.approach_name = f'FIFT'
 
     def load_data(self):
         data = get_data(self.config.dataset_name)
@@ -155,10 +153,9 @@ class FIGA:
 
             # print(unique_counts)
             # Penalize duplicates (already in tot_inputs) ---
-            if self.duplicate_penalty:
-                for i, key in enumerate(keys):
-                    if key in self.tot_inputs:
-                        unique_counts[i] = 1  # redundant → force to 1
+            for i, key in enumerate(keys):
+                if key in self.tot_inputs:
+                    unique_counts[i] = 1  # redundant → force to 1
             self.tot_inputs.update(keys)
             # discriminatory candidates
             disc_idx = np.where(unique_counts > 1)[0]
@@ -278,11 +275,10 @@ if __name__ == '__main__':
     classifier_path = f'models/{config.dataset_name}/{classifier_name}.pkl'
     model = joblib.load(classifier_path)
 
-    figa = FIGA(
+    figa = FIFT(
         config=config,
         model=model,
-        sensitive_param=sensitive_param,
-        classifier_name=classifier_name,
+        sensitive_param=sensitive_param
     )
 
     figa.run(max_allowed_time=max_allowed_time)
