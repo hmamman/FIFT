@@ -171,11 +171,11 @@ python main.py \
 | Approach | Description                                             |
 |----------|---------------------------------------------------------|
 | `fift`   | Feature Importance-Guided Fairness Testing (this work)  |
-| `expga`  | Explainability-Guided Genetic Algorithm                 |
+| `expga`  | Explaination-Guided Genetic Algorithm                 |
 | `eidig`  | Efficient Individual Discriminatory Instance Generation |
-| `maft`   | Mutation-based Adaptive Fairness Testing                |
-| `aft`    | Abstract Fairness Testing                               |
-| `grft`   | Gradient-Guided Fairness Testing                        |
+| `maft`   | Model-Agnostic Fairness Testing                |
+| `aft`    | Approximation-Guided Fairness Testing                               |
+| `grft`   | Genetic-Random Fairness Testing                        |
 
 ---
 
